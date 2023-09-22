@@ -17,7 +17,7 @@ group MapPatient(source src: AWSPatient, target tgt: ISiKPatient) {
     src.gender as s_gender -> tgt.gender = s_gender;
     src.birthDate as s_date -> tgt.birthDate = s_date;
     src.deceasedDateTime as s_deceased -> tgt.deceasedDateTime = s_deceased;
-    src.address as s_address -> tgt.address = s_address;
+    src -> tgt then MapPatientAddress(src, tgt);
     src.martialStatus as s_martialStatus -> tgt.martialStatus = s_martialStatus;
     src.photo as s_photo -> tgt.photo as s_photo;
     src.communication as s_communication -> tgt.communication = s_communication;
@@ -44,4 +44,22 @@ group MapPatientIdentifier(source src: Identifier, target tgt: Identifier) {
               s_coding.code -> t_coding.code = "MR";
         } "map-id-type-coding";
     } "map-id-type";
+}
+
+group MapPatientAddress(source src, target tgt) {
+    // Copy any address element, if exists
+    src.address as s_address -> tgt.address = s_address;
+    // Otherwise create an empty address element with data absent reason
+    src where $this.address.exists().not() -> tgt then CreateAbsentAddress(src, tgt) "absent-address";
+}
+
+group CreateAbsentAddress(source src: Patient, target tgt: Patient) {
+    src -> tgt.address = create("Address") as t_address, t_address.text = "Keine Adresse vorhanden" then CreateDataAbsentNotApplicable(src, t_address) "data-absent-not-applicable";
+}
+
+group CreateDataAbsentNotApplicable(source src, target tgt) {
+    src -> tgt.extension = create("Extension") as t_ext,
+        t_ext.url = "http://hl7.org/fhir/StructureDefinition/data-absent-reason",
+        t_ext.value = create("code") as t_value,
+        t_value.value = "not-applicable" "create-data-absent-extension";
 }
