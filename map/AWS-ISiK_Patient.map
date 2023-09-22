@@ -1,0 +1,47 @@
+/// url = "http://mihubx.de/fhir/StructureMap/MHX_SM_AwsToIsik"
+/// name = "MHX_SM_AwsToIsik"
+/// title = "AWS 1.2.0 to ISiK Basismodul 3.0.0 Conversions"
+/// status = "draft"
+
+uses "https://fhir.kbv.de/StructureDefinition/KBV_PR_AW_Patient" alias AWSPatient as source
+uses "https://gematik.de/fhir/isik/v3/Basismodul/StructureDefinition/ISiKPatient" alias ISiKPatient as target
+
+group MapPatient(source src: AWSPatient, target tgt: ISiKPatient) {
+    src.id as s_id -> tgt.id = s_id;
+    src.meta as s_meta -> tgt.meta as t_meta then MapMeta(s_meta, t_meta);
+    src.text as s_text -> tgt.text = s_text;
+    src.identifier as s_identifier -> tgt.identifier as t_identifier then MapPatientIdentifier(s_identifier, t_identifier);
+    src.active -> tgt.active;
+    src.name as s_name -> tgt.name = s_name;
+    src.telecom as s_telecom -> tgt.telecom = s_telecom;
+    src.gender as s_gender -> tgt.gender = s_gender;
+    src.birthDate as s_date -> tgt.birthDate = s_date;
+    src.deceasedDateTime as s_deceased -> tgt.deceasedDateTime = s_deceased;
+    src.address as s_address -> tgt.address = s_address;
+    src.martialStatus as s_martialStatus -> tgt.martialStatus = s_martialStatus;
+    src.photo as s_photo -> tgt.photo as s_photo;
+    src.communication as s_communication -> tgt.communication = s_communication;
+    src.generalPractitioner as s_generalPractitioner -> tgt.generalPractitioner = s_generalPractitioner;
+}
+
+group MapMeta(source src: Meta, target tgt: Meta) {
+    src.lastUpdated as s_lastUpdated -> tgt.lastUpdated = s_lastUpdated;
+    src.versionId as s_versionId -> tgt.versionId = s_versionId;
+    src.source as s_source -> tgt.source = s_source;
+    src.profile as s_profile -> tgt.profile = "https://gematik.de/fhir/isik/v3/Basismodul/StructureDefinition/ISiKPatient";
+    src.security as s_security -> tgt.security = s_security;
+    src.tag as s_tag -> tgt.tag = s_tag;
+}
+
+group MapPatientIdentifier(source src: Identifier, target tgt: Identifier) {
+    src.use as s_use -> tgt.use = s_use;
+    src.system as s_system where ($this = "http://fhir.de/NamingSystem/gkv/kvid-10") -> tgt.system = "http://fhir.de/sid/gkv/kvid-10";
+    src.system as s_system where (($this = "http://fhir.de/NamingSystem/gkv/kvid-10") = false) -> tgt.system = s_system;
+    src.value as s_value -> tgt.value = s_value;
+    src.type as s_type -> tgt.type as t_type then {
+        s_type.coding as s_coding -> t_type.coding as t_coding then {
+              s_coding.system -> t_coding.system = "http://terminology.hl7.org/CodeSystem/v2-0203";
+              s_coding.code -> t_coding.code = "MR";
+        } "map-id-type-coding";
+    } "map-id-type";
+}
