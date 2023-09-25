@@ -10,14 +10,14 @@ group MapPatient(source src: AWSPatient, target tgt: ISiKPatient) {
     src.id as s_id -> tgt.id = s_id;
     src.meta as s_meta -> tgt.meta as t_meta then MapMeta(s_meta, t_meta);
     src.text as s_text -> tgt.text = s_text;
-    src.identifier as s_identifier -> tgt.identifier as t_identifier then MapPatientIdentifier(s_identifier, t_identifier);
+    src -> tgt then MapPatientIdentifier(src, tgt) "fix-patient-identifier";
     src.active -> tgt.active;
     src.name as s_name -> tgt.name = s_name;
     src.telecom as s_telecom -> tgt.telecom = s_telecom;
     src.gender as s_gender -> tgt.gender = s_gender;
     src.birthDate as s_date -> tgt.birthDate = s_date;
     src.deceasedDateTime as s_deceased -> tgt.deceasedDateTime = s_deceased;
-    src -> tgt then MapPatientAddress(src, tgt);
+    src -> tgt then MapPatientAddress(src, tgt) "fix-patient-address";
     src.martialStatus as s_martialStatus -> tgt.martialStatus = s_martialStatus;
     src.photo as s_photo -> tgt.photo as s_photo;
     src.communication as s_communication -> tgt.communication = s_communication;
@@ -33,31 +33,53 @@ group MapMeta(source src: Meta, target tgt: Meta) {
     src.tag as s_tag -> tgt.tag = s_tag;
 }
 
-group MapPatientIdentifier(source src: Identifier, target tgt: Identifier) {
-    src.use as s_use -> tgt.use = s_use;
-    src.system as s_system where ($this = "http://fhir.de/NamingSystem/gkv/kvid-10") -> tgt.system = "http://fhir.de/sid/gkv/kvid-10";
-    src.system as s_system where (($this = "http://fhir.de/NamingSystem/gkv/kvid-10") = false) -> tgt.system = s_system;
-    src.value as s_value -> tgt.value = s_value;
-    src.type as s_type -> tgt.type as t_type then {
-        s_type.coding as s_coding -> t_type.coding as t_coding then {
-              s_coding.system -> t_coding.system = "http://terminology.hl7.org/CodeSystem/v2-0203";
-              s_coding.code -> t_coding.code = "MR";
-        } "map-id-type-coding";
-    } "map-id-type";
+group MapPatientIdentifier(source src: AWSPatient, target tgt: ISiKPatient) {
+    // Fix 1: Perform KVID patient identifier mapping with expected system
+    src -> tgt then FixGkvPatientIdentifier(src, tgt) "fix-gkv-pid-system";
+    // Fix 2: Map any identifier to expected medical record patient identifier
+    src -> tgt then FixMissingMedicalRecordPatientIdentifier(src, tgt) "fix-missing-mrid";
 }
 
-group MapPatientAddress(source src, target tgt) {
+group FixGkvPatientIdentifier(source src: AWSPatient, target tgt: ISiKPatient) {
+    src.identifier as s_kvid where ($this.system = "http://fhir.de/NamingSystem/gkv/kvid-10")
+        -> tgt.identifier as t_kvid then {
+            s_kvid.use as s_use -> t_kvid.use = s_use;
+            s_kvid.type as s_type -> t_kvid.type = s_type;
+            s_kvid.system -> t_kvid.system = "http://fhir.de/sid/gkv/kvid-10";
+            s_kvid.value as s_value -> t_kvid.value = s_value;
+        } "patient-kvid";
+}
+
+group FixMissingMedicalRecordPatientIdentifier(source src: AWSPatient, target tgt: ISiKPatient) {
+    src.identifier as s_identifier -> tgt.identifier = create("Identifier") as t_mrid then {
+             s_identifier.use as s_use -> t_mrid.use = s_use;
+             // If GKV, assign expected system (ignore source system)
+             s_identifier.system where ($this = "http://fhir.de/NamingSystem/gkv/identifier-10") -> t_mrid.system = "http://fhir.de/sid/gkv/identifier-10";
+             // Otherwise just copy source system
+             s_identifier.system as s_system where (($this = "http://fhir.de/NamingSystem/gkv/identifier-10") = false) -> t_mrid.system = s_system;
+             s_identifier.value as s_value -> t_mrid.value = s_value;
+             s_identifier.type as s_type -> t_mrid.type as t_type then {
+                 s_type.coding as s_coding -> t_type.coding = create("Coding") as t_coding then {
+                     s_coding.system -> t_coding.system = "http://terminology.hl7.org/CodeSystem/v2-0203";
+                     s_coding.code -> t_coding.code = "MR";
+                 } "mrid-type-coding";
+             } "mrid-type";
+        } "patient-mrid";
+}
+
+group MapPatientAddress(source src: AWSPatient, target tgt: ISiKPatient) {
     // Copy any address element, if exists
     src.address as s_address -> tgt.address = s_address;
     // Otherwise create an empty address element with data absent reason
     src where $this.address.exists().not() -> tgt then CreateAbsentAddress(src, tgt) "absent-address";
 }
 
-group CreateAbsentAddress(source src: Patient, target tgt: Patient) {
-    src -> tgt.address = create("Address") as t_address, t_address.text = "Keine Adresse vorhanden" then CreateDataAbsentNotApplicable(src, t_address) "data-absent-not-applicable";
+group CreateAbsentAddress(source src: AWSPatient, target tgt: ISiKPatient) {
+    src -> tgt.address = create("Address") as t_address,
+        t_address.text = "Keine Adresse vorhanden" then CreateDataAbsentNotApplicable(src, t_address) "data-absent-not-applicable";
 }
 
-group CreateDataAbsentNotApplicable(source src, target tgt) {
+group CreateDataAbsentNotApplicable(source src: AWSPatient, target tgt: Address) {
     src -> tgt.extension = create("Extension") as t_ext,
         t_ext.url = "http://hl7.org/fhir/StructureDefinition/data-absent-reason",
         t_ext.value = create("code") as t_value,
