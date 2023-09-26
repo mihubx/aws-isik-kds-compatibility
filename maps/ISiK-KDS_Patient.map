@@ -46,7 +46,7 @@ group MapMeta(source src: Meta, target tgt: Meta) {
 
 group MapPatientIdentifier(source src: AWSPatient, target tgt: ISiKPatient) {
     // Fix: Perform KVID patient identifier mapping with expected system
-    src -> tgt then FixGkvPatientIdentifier(src, tgt) "fix-gkv-pid-system";
+    src -> tgt then FixGkvPatientIdentifier(src, tgt) "recommendation-3";
     // Otherwise copy patient identifier
     src.identifier as s_identifier where (($this.system = "http://fhir.de/sid/gkv/kvid-10") = false) -> tgt.identifier = s_identifier;
 }
@@ -71,7 +71,7 @@ group FixGkvPatientIdentifier(source src: ISiKPatient, target tgt: KDSPatient) {
                    t_iknr.extension = create("Extension") as t_ext,
                    t_ext.url = "http://hl7.org/fhir/StructureDefinition/data-absent-reason",
                    t_ext.value = create("code") as t_value,
-                   t_value.value = "not-applicable" "fix-absent-managing-org";
+                   t_value.value = "not-applicable" "recommendation-4";
         } "patient-kvid";
 }
 
@@ -79,7 +79,7 @@ group MapPatientAddress(source src: AWSPatient, target tgt: ISiKPatient) {
     // Copy any address element, if exists
     src.address as s_address -> tgt.address = s_address;
     // Otherwise create an empty address element with data absent reason
-    src where $this.address.exists().not() -> tgt then CreateAbsentAddress(src, tgt) "absent-address";
+    src where $this.address.exists().not() -> tgt then CreateAbsentAddress(src, tgt) "recommendation-5";
 }
 
 group CreateAbsentAddress(source src: AWSPatient, target tgt: ISiKPatient) {

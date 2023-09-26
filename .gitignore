@@ -1,4 +1,5 @@
-example/
+.DS_Store
+examples/
 output/
-source/
+sources/
 validator_cli.jar

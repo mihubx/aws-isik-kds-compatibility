@@ -35,9 +35,9 @@ group MapMeta(source src: Meta, target tgt: Meta) {
 
 group MapPatientIdentifier(source src: AWSPatient, target tgt: ISiKPatient) {
     // Fix 1: Perform KVID patient identifier mapping with expected system
-    src -> tgt then FixGkvPatientIdentifier(src, tgt) "fix-gkv-pid-system";
+    src -> tgt then FixGkvPatientIdentifier(src, tgt) "recommendation-1";
     // Fix 2: Map any identifier to expected medical record patient identifier
-    src -> tgt then FixMissingMedicalRecordPatientIdentifier(src, tgt) "fix-missing-mrid";
+    src -> tgt then FixMissingMedicalRecordPatientIdentifier(src, tgt) "recommendation-2";
 }
 
 group FixGkvPatientIdentifier(source src: AWSPatient, target tgt: ISiKPatient) {
