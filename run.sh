@@ -64,16 +64,23 @@ function transform() {
 }
 
 function validate() {
-  updateVars
-  local BASISPROFIL_PKG_VER=${1:-"1.4.0"}
+  local PKG_DEPS=("$@")
+  local PKG_DEPS_LEN=${#PKG_DEPS[@]}
+  local IG_ARGS=""
 
+  if (( ${PKG_DEPS_LEN} != 0 )); then
+    for pkg in "${PKG_DEPS[@]}"; do
+      IG_ARGS="${IG_ARGS} -ig ${pkg}"
+    done
+  fi
+
+  updateVars
   java ${VALIDATOR_OPTS} -jar ${VALIDATOR_PATH} ${EXAMPLE_OUT_FILE} \
     -level warnings \
     -best-practice warning \
     -version 4.0.1 \
-    -ig ${SD_TGT_IG} \
-    -ig de.basisprofil.r4#${BASISPROFIL_PKG_VER} \
-    -profile ${SD_TGT_URL}
+    -profile ${SD_TGT_URL} \
+    -ig ${SD_TGT_IG} ${IG_ARGS}
 }
 
 function download() {
@@ -103,7 +110,8 @@ TGT_PREFIX=ISiK
 SD_SRC_URL=https://fhir.kbv.de/StructureDefinition/KBV_PR_AW_Patient
 SD_TGT_URL=https://gematik.de/fhir/isik/v3/Basismodul/StructureDefinition/ISiKPatient
 SM_DEF_URL=http://mihubx.de/fhir/StructureMap/MHX_SM_AwsToIsik
-compile && transform && validate "1.4.0"
+PKG_DEPS=("de.basisprofil.r4#1.4.0")
+compile && transform && validate "${PKG_DEPS[@]}"
 
 # ISiK to KDS Patient
 SRC_PREFIX=ISiK
@@ -112,4 +120,5 @@ SD_SRC_URL=https://gematik.de/fhir/isik/v3/Basismodul/StructureDefinition/ISiKPa
 SD_TGT_URL=https://www.medizininformatik-initiative.de/fhir/core/modul-person/StructureDefinition/Patient
 SM_DEF_URL=http://mihubx.de/fhir/StructureMap/MHX_SM_IsikToKds
 EXAMPLE_DIR=${OUTPUT_DIR}
-compile && transform && validate "0.9.13"
+PKG_DEPS=("de.basisprofil.r4#0.9.13" "de.medizininformatikinitiative.kerndatensatz.meta#1.0.3")
+compile && transform && validate "${PKG_DEPS[@]}"

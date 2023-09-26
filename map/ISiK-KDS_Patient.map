@@ -10,6 +10,7 @@ group MapPatient(source src: ISiKPatient, target tgt: KDSPatient) {
     src.id as s_id -> tgt.id = s_id;
     src.meta as s_meta -> tgt.meta as t_meta then MapMeta(s_meta, t_meta);
     src.text as s_text -> tgt.text = s_text;
+    src.contained as s_contained -> tgt.contained = s_contained;
     src -> tgt then MapPatientIdentifier(src, tgt) "fix-patient-identifier";
     src.active -> tgt.active;
     src.name as s_name -> tgt.name = s_name;
@@ -47,5 +48,6 @@ group FixGkvPatientIdentifier(source src: ISiKPatient, target tgt: KDSPatient) {
             s_kvid.type as s_type -> t_kvid.type = s_type;
             s_kvid.system -> t_kvid.system = "http://fhir.de/NamingSystem/gkv/kvid-10";
             s_kvid.value as s_value -> t_kvid.value = s_value;
+            s_kvid.assigner as s_assigner -> t_kvid.assigner = s_assigner;
         } "patient-kvid";
 }

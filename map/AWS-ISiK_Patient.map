@@ -10,6 +10,7 @@ group MapPatient(source src: AWSPatient, target tgt: ISiKPatient) {
     src.id as s_id -> tgt.id = s_id;
     src.meta as s_meta -> tgt.meta as t_meta then MapMeta(s_meta, t_meta);
     src.text as s_text -> tgt.text = s_text;
+    src -> tgt then CreateAbsentOrganization(src, tgt) "fix-absent-managing-org";
     src -> tgt then MapPatientIdentifier(src, tgt) "fix-patient-identifier";
     src.active -> tgt.active;
     src.name as s_name -> tgt.name = s_name;
@@ -22,6 +23,16 @@ group MapPatient(source src: AWSPatient, target tgt: ISiKPatient) {
     src.photo as s_photo -> tgt.photo as s_photo;
     src.communication as s_communication -> tgt.communication = s_communication;
     src.generalPractitioner as s_generalPractitioner -> tgt.generalPractitioner = s_generalPractitioner;
+}
+
+group CreateAbsentOrganization(source src: AWSPatient, target tgt: ISiKPatient) {
+    src -> tgt.contained = create("Organization") as t_organization,
+        t_organization.id = "absent-org",
+        t_organization.name = "Fehlende/ unbekannte Organisation",
+        t_organization.extension = create("Extension") as t_ext,
+        t_ext.url = "http://hl7.org/fhir/StructureDefinition/data-absent-reason",
+        t_ext.value = create("code") as t_value,
+        t_value.value = "not-applicable" "create-absent-org";
 }
 
 group MapMeta(source src: Meta, target tgt: Meta) {
@@ -47,23 +58,47 @@ group FixGkvPatientIdentifier(source src: AWSPatient, target tgt: ISiKPatient) {
             s_kvid.type as s_type -> t_kvid.type = s_type;
             s_kvid.system -> t_kvid.system = "http://fhir.de/sid/gkv/kvid-10";
             s_kvid.value as s_value -> t_kvid.value = s_value;
+            // Fix 2: Copy assigner if exists, otherwise create dummy managing organization with invalid IKNR
+            s_kvid.assigner as s_assigner -> t_kvid.assigner = s_assigner;
+            s_kvid where $this.assigner.exists().not()
+                -> t_kvid.assigner = create("Reference") as t_reference,
+                   t_reference.reference = "#absent-org",
+                   t_reference.identifier = create("Identifier") as t_iknr,
+                   t_iknr.system = "http://fhir.de/NamingSystem/arge-ik/iknr",
+                   t_iknr.value = "000000000",
+                   t_iknr.extension = create("Extension") as t_ext,
+                   t_ext.url = "http://hl7.org/fhir/StructureDefinition/data-absent-reason",
+                   t_ext.value = create("code") as t_value,
+                   t_value.value = "not-applicable" "fix-absent-managing-org";
         } "patient-kvid";
 }
 
 group FixMissingMedicalRecordPatientIdentifier(source src: AWSPatient, target tgt: ISiKPatient) {
     src.identifier as s_identifier -> tgt.identifier = create("Identifier") as t_mrid then {
-             s_identifier.use as s_use -> t_mrid.use = s_use;
-             // If GKV, assign expected system (ignore source system)
-             s_identifier.system where ($this = "http://fhir.de/NamingSystem/gkv/identifier-10") -> t_mrid.system = "http://fhir.de/sid/gkv/identifier-10";
-             // Otherwise just copy source system
-             s_identifier.system as s_system where (($this = "http://fhir.de/NamingSystem/gkv/identifier-10") = false) -> t_mrid.system = s_system;
-             s_identifier.value as s_value -> t_mrid.value = s_value;
-             s_identifier.type as s_type -> t_mrid.type as t_type then {
-                 s_type.coding as s_coding -> t_type.coding = create("Coding") as t_coding then {
-                     s_coding.system -> t_coding.system = "http://terminology.hl7.org/CodeSystem/v2-0203";
-                     s_coding.code -> t_coding.code = "MR";
-                 } "mrid-type-coding";
-             } "mrid-type";
+            s_identifier.use as s_use -> t_mrid.use = s_use;
+            // Fix 1: If GKV, assign expected system (ignore source system)
+            s_identifier.system where ($this = "http://fhir.de/NamingSystem/gkv/identifier-10") -> t_mrid.system = "http://fhir.de/sid/gkv/identifier-10";
+            // Otherwise just copy source system
+            s_identifier.system as s_system where (($this = "http://fhir.de/NamingSystem/gkv/identifier-10") = false) -> t_mrid.system = s_system;
+            s_identifier.value as s_value -> t_mrid.value = s_value;
+            s_identifier.type as s_type -> t_mrid.type as t_type then {
+                s_type.coding as s_coding -> t_type.coding = create("Coding") as t_coding then {
+                    s_coding.system -> t_coding.system = "http://terminology.hl7.org/CodeSystem/v2-0203";
+                    s_coding.code -> t_coding.code = "MR";
+                } "mrid-type-coding";
+            } "mrid-type";
+            // Fix 2: Copy assigner if exists, otherwise create dummy managing organization with invalid IKNR
+            s_identifier.assigner as s_assigner -> t_mrid.assigner = s_assigner;
+            s_identifier where $this.assigner.exists().not()
+                -> t_mrid.assigner = create("Reference") as t_reference,
+                   t_reference.reference = "#absent-org",
+                   t_reference.identifier = create("Identifier") as t_iknr,
+                   t_iknr.system = "http://fhir.de/NamingSystem/arge-ik/iknr",
+                   t_iknr.value = "000000000",
+                   t_iknr.extension = create("Extension") as t_ext,
+                   t_ext.url = "http://hl7.org/fhir/StructureDefinition/data-absent-reason",
+                   t_ext.value = create("code") as t_value,
+                   t_value.value = "not-applicable" "fix-absent-managing-org";
         } "patient-mrid";
 }
 
