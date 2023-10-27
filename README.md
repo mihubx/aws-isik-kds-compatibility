@@ -6,7 +6,7 @@ Im Rahmen des Forschungsprojektes und [Digitalen FortschrittsHubs MiHUBx](https:
 
 ![Szenario der Untersuchung](./assets/Szenario.png "Szenario der Untersuchung")
 
-Nach [§§371 bis 374 SGB V](https://www.gesetze-im-internet.de/sgb_5/BJNR024820988.html#BJNR024820988BJNG011200126) sind die Kassenärztliche Bundesvereinigung für den ambulanten Sektor sowie die Gesellschaft für Telematik für den stationären Sektor gleichermaß zur Festlegung einer offenen und standardisierten Schnittstelle für die Archivierung von Patientendaten sowie Übertragung von Patientendaten beim Systemwechsel bzw. die Anbindung versorgungsorientierter informationstechnischer Systeme zur Verarbeitung von Patientendaten angehalten. In §374 SGB V wird darüber hinaus gefordert, dass bei inhaltlichen Gemeinsamkeiten auch sektorübergreifend einheitliche Vorgaben zu treffen sind. Mit dem derzeit als [Kabinettvorlage existierende Gesundheitsdatennutzungsgesetz (GDNG)](https://www.bundesgesundheitsministerium.de/fileadmin/Dateien/3_Downloads/Gesetze_und_Verordnungen/GuV/D/Kabinettvorlage_Gesundheitsdatennutzungsgesetz-GDNG.pdf) wird die Bereitstellung und Nutzung von Gesundheitsdaten zu Forschungszwecken explizit adressiert und implizit auf Ergebnisse der Medizininformatik-Initiative Bezug genommen.
+Nach [§§371 bis 374 SGB V](https://www.gesetze-im-internet.de/sgb_5/BJNR024820988.html#BJNR024820988BJNG011200126) sind die Kassenärztliche Bundesvereinigung für den ambulanten Sektor sowie die Gesellschaft für Telematik für den stationären Sektor gleichermaßen zur Festlegung einer offenen und standardisierten Schnittstelle für die Archivierung von Patientendaten sowie Übertragung von Patientendaten beim Systemwechsel bzw. die Anbindung versorgungsorientierter informationstechnischer Systeme zur Verarbeitung von Patientendaten angehalten. In §374 SGB V wird darüber hinaus gefordert, dass bei inhaltlichen Gemeinsamkeiten auch sektorübergreifend einheitliche Vorgaben zu treffen sind. Mit dem derzeit als [Kabinettvorlage existierende Gesundheitsdatennutzungsgesetz (GDNG)](https://www.bundesgesundheitsministerium.de/fileadmin/Dateien/3_Downloads/Gesetze_und_Verordnungen/GuV/D/Kabinettvorlage_Gesundheitsdatennutzungsgesetz-GDNG.pdf) wird die Bereitstellung und Nutzung von Gesundheitsdaten zu Forschungszwecken explizit adressiert und implizit auf Ergebnisse der Medizininformatik-Initiative Bezug genommen.
 
 Im Rahmen der Untersuchung bildet der [Gematik ISiK-Schnittstellenstandard](https://fachportal.gematik.de/informationen-fuer/isik) als Anwendung der TI das zentrale Bindeglied zwischen dem ambulanten Sektor, in welchem die Erfassung der Versorgungsdaten stattfindet, sowie der Sekundärnutzung von Versorgungsdaten, die über organisatorische und technische Strukturen des stationären Sektors zu Forschungszwecken nutzbar gemacht werden.
 
@@ -34,15 +34,15 @@ Nachfolgend werden die identifizierten Probleme, die zugehörigen Ursachen sowie
 
 | Problem | Ursache | Empfehlung |
 |---------|---------|------------|
-| NamingSystem beim der 10-stelligen KVID verschieden | Unterschiedliche Versionen bei Paketabhängigkeit _Basisprofil DE (R4)_| Substitution des NamingSystem (recommendation-1) |
+| NamingSystem bei der 10-stelligen KVID verschieden | Unterschiedliche Versionen bei Paketabhängigkeit _Basisprofil DE (R4)_| Substitution des NamingSystem (recommendation-1) |
 | Patientenidentifikator vom Typ _HL7 v2 Table 0203, Medical Record_ erforderlich | Unterschiedliche _min_-Kardinalitäten bei Patientenidentifikatoren im Slice _PID_ / _Patientennummer_ | Umwandlung sämtlicher Patientenidentifikatoren als Patientenidentifikator vom geforderten Typ (recommendation-2) |
 
 ### Mapping-Regeln von _ISiK Basismodul v3.0.0_ Patient nach _MII KDS Person v1.0.16_ Patient
 
 | Problem | Ursache | Empfehlung |
 |---------|---------|------------|
-| NamingSystem beim der 10-stelligen KVID verschieden | Unterschiedliche Versionen bei Paketabhängigkeit _Basisprofil DE (R4)_| Substitution des NamingSystem (recommendation-3) |
-| Angabe des Ausstellers bzw. Verwalters (zuweisende Organisation) der KVID erforderlich | Unterschiedliche _min_-Kardinalitäten der zuweisenden Organisation beim Patientenidentifikator im Slice _GKV_ | Bei Nicht-Existenz eine zuweisenden Organisation wird eine leere Organisation mit der [Data Absent Reason-Erweiterung](https://hl7.org/fhir/extensions/StructureDefinition-data-absent-reason.html) eingefügt (recommendation-4) |
+| NamingSystem bei der 10-stelligen KVID verschieden | Unterschiedliche Versionen bei Paketabhängigkeit _Basisprofil DE (R4)_| Substitution des NamingSystem (recommendation-3) |
+| Angabe des Ausstellers bzw. Verwalters (zuweisende Organisation) der KVID erforderlich | Unterschiedliche _min_-Kardinalitäten der zuweisenden Organisation beim Patientenidentifikator im Slice _GKV_ | Bei Nicht-Existenz einer zuweisenden Organisation wird eine leere Organisation mit der [Data Absent Reason-Erweiterung](https://hl7.org/fhir/extensions/StructureDefinition-data-absent-reason.html) eingefügt (recommendation-4) |
 | Angabe mindestens einer Adresse zum Patienten ist erforderlich | Unterschiedliche _min_-Kardinalitäten bei der Eigenschaft zur Adressangabe | Bei Nicht-Existenz einer Adresse wird eine leere Adresse mit der [Data Absent Reason-Erweiterung](https://hl7.org/fhir/extensions/StructureDefinition-data-absent-reason.html) eingefügt (recommendation-5) |
 
 ## Erläuterungen zum Repository
@@ -55,4 +55,4 @@ Nachfolgend werden die identifizierten Probleme, die zugehörigen Ursachen sowie
 | `map.sh` | Bash-Skript zur Vorbereitung und Ausführung der Transformation des Beispielpatienten aus dem AWS FHIR-Paket unter Verwendung der Mapping-Regeln | Benötigte Ressourcen (z.B. FHIR Validator, FHIR StructureDefinitions und -Pakete) werden automatisch heruntergeladen |
 | `maps` | Verzeichnis für Dateien mit Mapping-Regeln gem. FHIR Mapping Language | Die obigen Empfehlungen sind hier als Mapping-Regeln implementiert und unter dem jeweiligen Kürzel referenziert |
 | `output` | Verzeichis für Kompilations- und Transformationsergebnisse sowie für die generierten Berichte der FHIR-Profil-Vergleiche | Bei lokaler Ausführung des `run.sh` Skripts werden die erzeugten FHIR StructureMaps und transformierte Beispielpatienten hier gespeichert |
-| `sources` | Verzeichnis für die heruntergeladenen FHIR StructureDefinitions, die die FHIR Profile zum Informationsobjekt Patient des jeweiligen Schnittstelenstandards darstellen ||
+| `sources` | Verzeichnis für die heruntergeladenen FHIR StructureDefinitions, die die FHIR Profile zum Informationsobjekt Patient des jeweiligen Schnittstellenstandards darstellen ||
