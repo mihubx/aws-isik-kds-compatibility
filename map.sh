@@ -102,7 +102,7 @@ download "${VALIDATOR_PATH}" "https://github.com/hapifhir/org.hl7.fhir.core/rele
 download "${EXAMPLE_DIR}/AWS-Example.Patient.xml" "https://simplifier.net/ui/packagefile/downloadas?packageFileId=775391&format=xml" "[INFO] Download KBV AWS FHIR Patient example"
 download "${SOURCE_DIR}/AWS-Patient.StructureDefinition.xml" "https://simplifier.net/ui/packagefile/downloadsnapshotas?packageFileId=775417&format=xml" "[INFO] Download KBV AWS FHIR Patient StructureDefinition"
 download "${SOURCE_DIR}/ISiK-Patient.StructureDefinition.xml" "https://simplifier.net/ui/packagefile/downloadsnapshotas?packageFileId=2047391&format=xml" "[INFO] Download Gematik ISiK Basismodul FHIR Patient StructureDefinition"
-download "${SOURCE_DIR}/KDS-Patient.StructureDefinition.xml" "https://simplifier.net/ui/packagefile/downloadsnapshotas?packageFileId=525898&format=xml" "[INFO] Download MII KDS Person FHIR Patient StructureDefinition"
+download "${SOURCE_DIR}/KDS-Patient.StructureDefinition.xml" "https://simplifier.net/ui/packagefile/downloadas?packageFileId=2212055&format=xml" "[INFO] Download MII KDS Person FHIR Patient StructureDefinition"
 
 # AWS to ISiK Patient
 SRC_PREFIX=AWS
