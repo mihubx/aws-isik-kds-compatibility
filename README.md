@@ -50,8 +50,9 @@ Nachfolgend werden die identifizierten Probleme, die zugehörigen Ursachen sowie
 | Inhalt | Beschreibung | Kommentar |
 |--------|--------------|-----------|
 | `assets` | Verzeichnis für Ressourcen, wie z.B. Grafiken für die README ||
+| `compare.sh` | Bash-Skript zur Ausführung der FHIR-Profil-Vergleiche | Benötigte Ressourcen (z.B. FHIR Validator, FHIR StructureDefinitions und -Pakete) werden automatisch heruntergeladen |
 | `examples` | Verzeichnis für zu transformierende Beispieldateien eines Patienten | Bei lokaler Ausführung des `run.sh` Skripts wird der Beispielpatient aus dem AWS FHIR-Paket hier gespeichert |
+| `map.sh` | Bash-Skript zur Vorbereitung und Ausführung der Transformation des Beispielpatienten aus dem AWS FHIR-Paket unter Verwendung der Mapping-Regeln | Benötigte Ressourcen (z.B. FHIR Validator, FHIR StructureDefinitions und -Pakete) werden automatisch heruntergeladen |
 | `maps` | Verzeichnis für Dateien mit Mapping-Regeln gem. FHIR Mapping Language | Die obigen Empfehlungen sind hier als Mapping-Regeln implementiert und unter dem jeweiligen Kürzel referenziert |
-| `output` | Verzeichis für Kompilations- und Transformationsergebnisse | Bei lokaler Ausführung des `run.sh` Skripts werden die erzeugten FHIR StructureMaps und transformierte Beispielpatienten hier gespeichert |
-| `run.sh` | Bash-Skript zur Vorbereitung und Ausführung der Transformation des Beispielpatienten aus dem AWS FHIR-Paket unter Verwendung der Mapping-Regeln | Benötigte Ressourcen (z.B. FHIR Validator, FHIR StructureDefinitions und -Pakete) werden automatisch heruntergeladen |
+| `output` | Verzeichis für Kompilations- und Transformationsergebnisse sowie für die generierten Berichte der FHIR-Profil-Vergleiche | Bei lokaler Ausführung des `run.sh` Skripts werden die erzeugten FHIR StructureMaps und transformierte Beispielpatienten hier gespeichert |
 | `sources` | Verzeichnis für die heruntergeladenen FHIR StructureDefinitions, die die FHIR Profile zum Informationsobjekt Patient des jeweiligen Schnittstelenstandards darstellen ||
